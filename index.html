@@ -5,12 +5,13 @@
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    <h1>Suricata Rules Manager</h1>
+    <h1>Suricata Rule Manager</h1>
     <div id="stats">
         <p>Total Rules: <span id="total-rules">0</span></p>
         <p>Enabled Rules: <span id="enabled-rules">0</span></p>
         <p>Disabled Rules: <span id="disabled-rules">0</span></p>
     </div>
+    <button onclick="saveRules()">Save</button>
     <div id="rules-container"></div>
     <button onclick="saveRules()">Save</button>
 
@@ -30,11 +31,11 @@
 
                     data.forEach((rule, index) => {
                         const ruleElement = document.createElement('div');
-                        ruleElement.innerHTML = `<span>${rule}</span><input type="checkbox" ${rule.startsWith('#') ? '' : 'checked'} onchange="toggleRule(${index})">`;
-                        ruleElement.className = rule.startsWith('#') ? 'disabled' : '';
+                        ruleElement.innerHTML = `<span>${rule}</span><input type="checkbox" ${rule.startsWith('# ') ? '' : 'checked'} onchange="toggleRule(${index})">`;
+                        ruleElement.className = rule.startsWith('# ') ? 'disabled' : '';
 
                         totalRules++;
-                        if (rule.startsWith('#')) {
+                        if (rule.startsWith('# ')) {
                             disabledRules++;
                         } else {
                             enabledRules++;
@@ -65,7 +66,7 @@
                 disabledRulesElement.textContent = parseInt(disabledRulesElement.textContent) - 1;
             } else {
                 ruleElement.className = 'disabled';
-                ruleElement.innerHTML = `<span>#${ruleText}</span><input type="checkbox" onchange="toggleRule(${index})">`;
+                ruleElement.innerHTML = `<span># ${ruleText}</span><input type="checkbox" onchange="toggleRule(${index})">`;
                 enabledRulesElement.textContent = parseInt(enabledRulesElement.textContent) - 1;
                 disabledRulesElement.textContent = parseInt(disabledRulesElement.textContent) + 1;
             }
