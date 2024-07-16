@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Suricata Rules Manager</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <h1>Suricata Rules Manager</h1>
+    <div id="stats">
+        <p>Total Rules: <span id="total-rules">0</span></p>
+        <p>Enabled Rules: <span id="enabled-rules">0</span></p>
+        <p>Disabled Rules: <span id="disabled-rules">0</span></p>
+    </div>
+    <div id="rules-container"></div>
+    <button onclick="saveRules()">Save</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            fetch('/api/rules')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('rules-container');
+                    const totalRulesElement = document.getElementById('total-rules');
+                    const enabledRulesElement = document.getElementById('enabled-rules');
+                    const disabledRulesElement = document.getElementById('disabled-rules');
+
+                    let totalRules = 0;
+                    let enabledRules = 0;
+                    let disabledRules = 0;
+
+                    data.forEach((rule, index) => {
+                        const ruleElement = document.createElement('div');
+                        ruleElement.innerHTML = `<span>${rule}</span><input type="checkbox" ${rule.startsWith('#') ? '' : 'checked'} onchange="toggleRule(${index})">`;
+                        ruleElement.className = rule.startsWith('#') ? 'disabled' : '';
+
+                        totalRules++;
+                        if (rule.startsWith('#')) {
+                            disabledRules++;
+                        } else {
+                            enabledRules++;
+                        }
+
+                        container.appendChild(ruleElement);
+                    });
+
+                    totalRulesElement.textContent = totalRules;
+                    enabledRulesElement.textContent = enabledRules;
+                    disabledRulesElement.textContent = disabledRules;
+                });
+        });
+
+        function toggleRule(index) {
+            const container = document.getElementById('rules-container');
+            const ruleElement = container.children[index];
+            const ruleText = ruleElement.querySelector('span').innerText;
+
+            const totalRulesElement = document.getElementById('total-rules');
+            const enabledRulesElement = document.getElementById('enabled-rules');
+            const disabledRulesElement = document.getElementById('disabled-rules');
+
+            if (ruleElement.className === 'disabled') {
+                ruleElement.className = '';
+                ruleElement.innerHTML = `<span>${ruleText.slice(1)}</span><input type="checkbox" checked onchange="toggleRule(${index})">`;
+                enabledRulesElement.textContent = parseInt(enabledRulesElement.textContent) + 1;
+                disabledRulesElement.textContent = parseInt(disabledRulesElement.textContent) - 1;
+            } else {
+                ruleElement.className = 'disabled';
+                ruleElement.innerHTML = `<span>#${ruleText}</span><input type="checkbox" onchange="toggleRule(${index})">`;
+                enabledRulesElement.textContent = parseInt(enabledRulesElement.textContent) - 1;
+                disabledRulesElement.textContent = parseInt(disabledRulesElement.textContent) + 1;
+            }
+        }
+
+        function saveRules() {
+            const container = document.getElementById('rules-container');
+            const rules = Array.from(container.children).map(child => child.querySelector('span').innerText + '\n');
+            fetch('/api/rules', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(rules),
+            }).then(response => response.json())
+              .then(data => alert('Rules saved successfully'));
+        }
+    </script>
+</body>
+</html>
